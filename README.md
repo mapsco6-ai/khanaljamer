@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # vinext-starter
 
 A clean full-stack starter running on
@@ -111,3 +112,6 @@ The timeout defaults can be overridden for a controlled canary with `SITES_INSTA
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
 - [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+=======
+# khanaljamer
+>>>>>>> 3c5f3d25eb181ca678473f1d5319c7a1191671c8
