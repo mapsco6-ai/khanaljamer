@@ -1,1 +1,0 @@
-ALTER TABLE `menu_overrides` ADD `image_key` text;

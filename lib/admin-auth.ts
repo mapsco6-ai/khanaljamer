@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
 
 const cookieName = "khan_admin";
@@ -10,8 +9,8 @@ async function digest(value: string) {
 }
 
 export async function expectedToken() {
-  const secret = env.ADMIN_SESSION_SECRET;
-  const password = env.ADMIN_PASSWORD;
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  const password = process.env.ADMIN_PASSWORD;
   if (!secret || !password) return null;
   return digest(`${secret}:${password}`);
 }

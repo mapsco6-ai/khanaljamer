@@ -1,8 +1,8 @@
-import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { offers } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
+import { deleteFile, putFile } from "@/lib/storage";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const dateOrNull = (value: FormDataEntryValue | null) => value ? new Date(String(value)) : null;
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     if (!allowedTypes.has(file.type) || file.size > 8 * 1024 * 1024) return Response.json({ error: "الصورة يجب أن تكون JPG أو PNG أو WEBP وبحجم أقل من 8MB" }, { status: 400 });
     const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
     imageKey = `offer-${crypto.randomUUID()}.${ext}`;
-    await env.BUCKET.put(imageKey, await file.arrayBuffer(), { httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" } });
+    await putFile(imageKey, await file.arrayBuffer());
   }
   const now = new Date(); const id = `offer-${crypto.randomUUID()}`;
   await getDb().insert(offers).values({ id, title, description, oldPrice, newPrice, imageKey, startsAt: dateOrNull(form.get("startsAt")), endsAt: dateOrNull(form.get("endsAt")), active: true, createdAt: now, updatedAt: now });
@@ -40,7 +40,7 @@ export async function DELETE(request: Request) {
   if (!(await isAdmin())) return Response.json({ error: "غير مصرح" }, { status: 401 });
   const id = new URL(request.url).searchParams.get("id") || "";
   const [offer] = await getDb().select().from(offers).where(eq(offers.id, id)).limit(1);
-  if (offer?.imageKey) await env.BUCKET.delete(offer.imageKey);
+  if (offer?.imageKey) await deleteFile(offer.imageKey);
   await getDb().delete(offers).where(eq(offers.id, id));
   return Response.json({ ok: true });
 }

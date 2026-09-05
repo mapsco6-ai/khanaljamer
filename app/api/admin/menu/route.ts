@@ -2,6 +2,7 @@ import { getDb } from "@/db";
 import { customMenuItems, menuOverrides } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
 import { defaultMenu } from "@/lib/menu-data";
+import { deleteFile, putFile } from "@/lib/storage";
 import { eq } from "drizzle-orm";
 
 export async function PATCH(request: Request) {
@@ -47,7 +48,7 @@ export async function DELETE(request: Request) {
   const id = new URL(request.url).searchParams.get("id") || "";
   if (!id.startsWith("custom-")) return Response.json({ error: "يمكن حذف الوجبات المضافة فقط" }, { status: 400 });
   const [item] = await getDb().select().from(customMenuItems).where(eq(customMenuItems.id, id)).limit(1);
-  if (item?.imageKey) { const { env } = await import("cloudflare:workers"); await env.BUCKET.delete(item.imageKey); }
+  if (item?.imageKey) await deleteFile(item.imageKey);
   await getDb().delete(customMenuItems).where(eq(customMenuItems.id, id));
   return Response.json({ ok: true });
 }
@@ -57,7 +58,6 @@ async function uploadMenuFile(file: File, prefix: string) {
   if (!allowed.has(file.type) || file.size > 8 * 1024 * 1024) return Response.json({ error: "استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8MB" }, { status: 400 });
   const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   const key = `${prefix}-${crypto.randomUUID()}.${extension}`;
-  const { env } = await import("cloudflare:workers");
-  await env.BUCKET.put(key, await file.arrayBuffer(), { httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" } });
+  await putFile(key, await file.arrayBuffer());
   return key;
 }

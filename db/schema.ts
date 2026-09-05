@@ -1,16 +1,16 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { boolean, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
-export const menuOverrides = sqliteTable("menu_overrides", {
+export const menuOverrides = pgTable("menu_overrides", {
   itemId: text("item_id").primaryKey(),
   name: text("name").notNull(),
   price: integer("price").notNull(),
   imageKey: text("image_key"),
-  available: integer("available", { mode: "boolean" }).notNull().default(true),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  available: boolean("available").notNull().default(true),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull(),
 });
 
-export const complaints = sqliteTable("complaints", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const complaints = pgTable("complaints", {
+  id: serial("id").primaryKey(),
   reference: text("reference").notNull().unique(),
   type: text("type").notNull(),
   area: text("area").notNull(),
@@ -19,32 +19,32 @@ export const complaints = sqliteTable("complaints", {
   rating: integer("rating").notNull(),
   status: text("status").notNull().default("new"),
   managerNote: text("manager_note").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull(),
 });
 
-export const customMenuItems = sqliteTable("custom_menu_items", {
+export const customMenuItems = pgTable("custom_menu_items", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   category: text("category").notNull(),
   price: integer("price").notNull(),
   description: text("description").notNull().default(""),
   imageKey: text("image_key"),
-  available: integer("available", { mode: "boolean" }).notNull().default(true),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  available: boolean("available").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull(),
 });
 
-export const offers = sqliteTable("offers", {
+export const offers = pgTable("offers", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
   oldPrice: integer("old_price"),
   newPrice: integer("new_price").notNull(),
   imageKey: text("image_key"),
-  startsAt: integer("starts_at", { mode: "timestamp_ms" }),
-  endsAt: integer("ends_at", { mode: "timestamp_ms" }),
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  startsAt: timestamp("starts_at", { mode: "date" }),
+  endsAt: timestamp("ends_at", { mode: "date" }),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull(),
 });

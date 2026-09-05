@@ -1,9 +1,9 @@
-import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { customMenuItems, menuOverrides } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
 import { defaultMenu } from "@/lib/menu-data";
+import { deleteFile, putFile } from "@/lib/storage";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -21,13 +21,13 @@ export async function POST(request: Request) {
   const [current] = source ? await db.select().from(menuOverrides).where(eq(menuOverrides.itemId, itemId)).limit(1) : [];
   const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   const key = `menu-${itemId}-${crypto.randomUUID()}.${extension}`;
-  await env.BUCKET.put(key, await file.arrayBuffer(), { httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" } });
+  await putFile(key, await file.arrayBuffer());
 
   if (source) {
     const values = { itemId, name: current?.name ?? source.name, price: current?.price ?? source.price, imageKey: key, available: current?.available ?? source.available, updatedAt: new Date() };
     await db.insert(menuOverrides).values(values).onConflictDoUpdate({ target: menuOverrides.itemId, set: { imageKey: key, updatedAt: values.updatedAt } });
   } else await db.update(customMenuItems).set({ imageKey: key, updatedAt: new Date() }).where(eq(customMenuItems.id, itemId));
   const oldKey = current?.imageKey ?? custom?.imageKey;
-  if (oldKey) await env.BUCKET.delete(oldKey);
+  if (oldKey) await deleteFile(oldKey);
   return Response.json({ image: `/api/menu-image/${encodeURIComponent(key)}` });
 }
