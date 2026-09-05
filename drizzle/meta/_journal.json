@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788184171268,
+      "tag": "0000_wet_meteorite",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788185632759,
+      "tag": "0001_silent_prism",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788186706635,
+      "tag": "0002_daffy_bushwacker",
+      "breakpoints": true
+    }
+  ]
+}

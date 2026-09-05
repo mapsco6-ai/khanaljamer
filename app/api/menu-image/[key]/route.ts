@@ -1,0 +1,13 @@
+import { env } from "cloudflare:workers";
+
+export async function GET(_request: Request, context: { params: Promise<{ key: string }> }) {
+  const { key } = await context.params;
+  if ((!key.startsWith("menu-") && !key.startsWith("offer-")) || key.includes("/")) return new Response("Not found", { status: 404 });
+  const object = await env.BUCKET.get(key);
+  if (!object) return new Response("Not found", { status: 404 });
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set("etag", object.httpEtag);
+  headers.set("cache-control", "public, max-age=31536000, immutable");
+  return new Response(object.body, { headers });
+}
